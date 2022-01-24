@@ -2,6 +2,7 @@
 
 import random
 import config as cfg
+import numpy as np
 
 import torch
 import torch.nn as nn
@@ -82,7 +83,7 @@ class QLearn:
         return action
 
     # learn
-    def learn(self, state1, action, state2, reward):
+    def learn(self, state, action, next_state, reward, is_last_state):
         """Stochastic Learning"""
 
         # Model predictions (softmax arrays outputs)

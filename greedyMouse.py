@@ -5,6 +5,7 @@ import setup
 import qlearn
 import config as cfg
 from queue import Queue
+import numpy as np
 # reload(setup) 
 # reload(qlearn)
 
@@ -238,7 +239,7 @@ class Mouse(setup.Agent):
             self.catWin += 1
             reward = cfg.EATEN_BY_CAT
             if self.lastState is not None:
-                self.ai.learn(self.lastState, self.lastAction, state, reward)
+                self.ai.learn(self.lastState, self.lastAction, state, reward, is_last_state=True)
                 print('mouse learn...')
             self.lastState = None
             self.list_iterations.append(self.iterations)
@@ -261,7 +262,7 @@ class Mouse(setup.Agent):
         #    cheese.cell = pick_random_location()
 
         if self.lastState is not None: #souris non mangée
-            self.ai.learn(self.lastState, self.lastAction, state, reward)
+            self.ai.learn(self.lastState, self.lastAction, state, reward, is_last_state=False)
 
         # choose a new action and execute it
         action = self.ai.choose_action(state)
@@ -318,7 +319,7 @@ class Mouse_bis(setup.Agent):
             self.catWin += 1
             reward = cfg.EATEN_BY_CAT
             if self.lastState is not None:
-                self.ai.learn(self.lastState, self.lastAction, state, reward)
+                self.ai.learn(self.lastState, self.lastAction, state, reward, is_last_state=True)
                 print('mouse learn...')
             self.lastState = None
             self.list_iterations.append(self.iterations)
@@ -341,7 +342,7 @@ class Mouse_bis(setup.Agent):
         #    cheese.cell = pick_random_location()
 
         if self.lastState is not None: #souris non mangée
-            self.ai.learn(self.lastState, self.lastAction, state, reward)
+            self.ai.learn(self.lastState, self.lastAction, state, reward, is_last_state=False)
 
         # choose a new action and execute it
         action = self.ai.choose_action(state)
