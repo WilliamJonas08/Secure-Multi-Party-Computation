@@ -5,6 +5,7 @@ import setup
 import qlearn
 import config as cfg
 from queue import Queue
+import numpy as np
 # reload(setup) 
 # reload(qlearn)
 
@@ -212,7 +213,7 @@ class Cat_bis(setup.Agent):
 class Mouse(setup.Agent):
     def __init__(self):
         self.ai = None
-        self.ai = qlearn.QLearn(actions=range(cfg.directions), alpha=0.1, gamma=0.9, epsilon=0.1)
+        self.ai = qlearn.QLearn(actions=range(cfg.directions), input_size=8, alpha=0.1, gamma=0.9, epsilon=0.1)
 #TODO self.ai =  contextual bandit agent ?
         self.catWin = 0
         self.mouseWin = 0
@@ -238,7 +239,7 @@ class Mouse(setup.Agent):
             self.catWin += 1
             reward = cfg.EATEN_BY_CAT
             if self.lastState is not None:
-                self.ai.learn(self.lastState, self.lastAction, state, reward)
+                self.ai.learn(self.lastState, self.lastAction, state, reward, is_last_state=True)
                 print('mouse learn...')
             self.lastState = None
             self.list_iterations.append(self.iterations)
@@ -261,7 +262,7 @@ class Mouse(setup.Agent):
         #    cheese.cell = pick_random_location()
 
         if self.lastState is not None: #souris non mangée
-            self.ai.learn(self.lastState, self.lastAction, state, reward)
+            self.ai.learn(self.lastState, self.lastAction, state, reward, is_last_state=False)
 
         # choose a new action and execute it
         action = self.ai.choose_action(state)
@@ -270,6 +271,10 @@ class Mouse(setup.Agent):
         self.go_direction(action)
 
     def calculate_state(self):
+        """
+        Return : State sous la forme d'un array de valeurs (cell value) correspondant aux cellules adjacentes à la cellule courante de la souris
+        Size array : 8
+        """
         def cell_value(cell):
             if cat.cell is not None and (cell.x == cat.cell.x and cell.y == cat.cell.y):
                 return 3
@@ -280,14 +285,15 @@ class Mouse(setup.Agent):
 
         dirs = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
 #TODO : revoir et comprendre
-        return tuple([cell_value(world.get_relative_cell(self.cell.x + dir[0], self.cell.y + dir[1])) for dir in dirs])
+        return np.array([cell_value(world.get_relative_cell(self.cell.x + dir[0], self.cell.y + dir[1])) for dir in dirs])
+
     def return_liste_performances(self):
         return(self.list_iterations)
 
 class Mouse_bis(setup.Agent):
     def __init__(self):
         self.ai = None
-        self.ai = qlearn.QLearn(actions=range(cfg.directions), alpha=0.1, gamma=0.9, epsilon=0.1)
+        self.ai = qlearn.QLearn(actions=range(cfg.directions), input_size=8, alpha=0.1, gamma=0.9, epsilon=0.1)
         #TODO self.ai =  contextual bandit agent ?
         self.catWin = 0
         self.mouseWin = 0
@@ -313,7 +319,7 @@ class Mouse_bis(setup.Agent):
             self.catWin += 1
             reward = cfg.EATEN_BY_CAT
             if self.lastState is not None:
-                self.ai.learn(self.lastState, self.lastAction, state, reward)
+                self.ai.learn(self.lastState, self.lastAction, state, reward, is_last_state=True)
                 print('mouse learn...')
             self.lastState = None
             self.list_iterations.append(self.iterations)
@@ -336,7 +342,7 @@ class Mouse_bis(setup.Agent):
         #    cheese.cell = pick_random_location()
 
         if self.lastState is not None: #souris non mangée
-            self.ai.learn(self.lastState, self.lastAction, state, reward)
+            self.ai.learn(self.lastState, self.lastAction, state, reward, is_last_state=False)
 
         # choose a new action and execute it
         action = self.ai.choose_action(state)
@@ -345,6 +351,10 @@ class Mouse_bis(setup.Agent):
         self.go_direction(action)
 
     def calculate_state(self):
+        """
+        Return : State sous la forme d'un array de valeurs (cell value) correspondant aux cellules adjacentes à la cellule courante de la souris
+        Size array : 8
+        """
         def cell_value(cell):
             if cat_bis.cell is not None and (cell.x == cat_bis.cell.x and cell.y == cat_bis.cell.y):
                 return 3
@@ -355,7 +365,8 @@ class Mouse_bis(setup.Agent):
 
         dirs = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
         #TODO : revoir et comprendre
-        return tuple([cell_value(world_bis.get_relative_cell(self.cell.x + dir[0], self.cell.y + dir[1])) for dir in dirs])
+        return np.array([cell_value(world_bis.get_relative_cell(self.cell.x + dir[0], self.cell.y + dir[1])) for dir in dirs])
+
     def return_liste_performances(self):
         return(self.list_iterations)
 
