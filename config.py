@@ -16,10 +16,10 @@ alpha = 0.1    # learning rate
 gamma = 0.9    # importance of next action
 epsilon = 0.1  # exploration chance
 
-
 # ------Reward and Punishment----
-EATEN_BY_CAT = -1
-MOVE_REWARD = 0 #+1 L'UN OU L'AUTRE JE DIRAIS
+EATEN_BY_CAT = -100
+MOVE_REWARD = +1 #Récompense pour avoir fait un mouvement sans être mangée
+TIME_TO_SURVIVE=100 #Durée d'un épisode pour que souris gagne
 
 # determine how many directions can agent moves.
 directions = 8   # you may change it to 4: up,down,left and right.
