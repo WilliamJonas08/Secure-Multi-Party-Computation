@@ -94,10 +94,11 @@ class QLearn:
 
         # Correction on the target Q value for the action used
         if is_last_state:
-            target[0][action] = reward
+            target[0][action] += self.alpha*reward #= reward
         else:
-            target[0][action] = reward + self.gamma * (torch.max(target_next[0]))   #Reward propagation through states
-
+            target[0][action] += self.alpha*(reward + self.gamma * (torch.max(target_next[0]))-target[0][action])  #= reward + self.gamma * (torch.max(target_next[0]))
+            #Reward propagation through states
+        target = nn.Softmax(dim=-1)(target)
         # Train the Neural Network with batches
         self.fit(model=self.model, x=state, y=target)
 

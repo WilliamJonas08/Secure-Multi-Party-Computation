@@ -70,7 +70,7 @@ class World:
         self.get_file_size(filename)
 
         self.image = None
-        self.mouseWin = None
+        self.mouseWin = 0#None
         self.catWin = None
         self.reset()
         self.load(filename)
@@ -253,8 +253,8 @@ class tkinterDisplay:
     def make_title(self, world):
         text = 'age: %d' % world.age
         extra = []
-        if world.mouseWin:
-            extra.append('mouseWin=%d' % world.mouseWin)
+        #if world.mouseWin:
+        extra.append('mouseWin=%d' % world.mouseWin)
         if world.catWin:
             extra.append('catWin=%d' % world.catWin)
         if world.display.paused:
@@ -379,7 +379,6 @@ class tkinterDisplay:
                 self.dataCache[c] = val
             return val
 
-
 def make_display(world):
     d = tkinterDisplay()
     d.world = world
@@ -407,7 +406,7 @@ class World_bis:
         self.get_file_size(filename)
 
         self.image = None
-        self.mouseWin = None
+        self.mouseWin = 0#None
         self.catWin = None
         self.reset()
         self.load(filename)

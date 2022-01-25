@@ -405,8 +405,8 @@ world.display.speed = cfg.speed
 
 #World 2
 mouse_bis = Mouse_bis()
-cat_bis = Cat_bis(filename='resources/world_copy.txt')
-world_bis = setup.World_bis(filename='resources/world_copy.txt') #setup.World
+cat_bis = Cat_bis(filename='resources/world_bis.txt') #world_copy.txt
+world_bis = setup.World_bis(filename='resources/world_bis.txt') #setup.World
 world_bis.add_agent(mouse_bis)
 world_bis.add_agent(cat_bis,cell=pick_random_location_bis())
 #world_bis.display.activate() ##POSE PB
@@ -416,7 +416,7 @@ world_bis.add_agent(cat_bis,cell=pick_random_location_bis())
 age_max=10000 #10000
 for i in range(age_max):
     world.update(mouse.mouseWin, mouse.catWin)
-for i in range(age_max):
+#for i in range(age_max):
     world_bis.update(mouse_bis.mouseWin, mouse_bis.catWin)
 a=mouse.return_liste_performances()
 print(a)

@@ -6,7 +6,7 @@ grid_width = 50   # pixels of a single grid
 wall_color = '#D3CAB4'
 cat_color = '#000000'
 mouse_color = '#06B1C8'
-speed = 9000   # animal speed is 10m/s, the max value supposed to be less than
+speed = 500   # animal speed is 10m/s, the max value supposed to be less than
 # 1000.
 #TODO : SPEED ?
 
