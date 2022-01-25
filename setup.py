@@ -480,7 +480,10 @@ class World:
 class Mouse(Agent):
     def __init__(self):
         self.ai = None
-        self.ai = qlearn.QLearn(actions=range(cfg.directions), input_size=8, alpha=0.1, gamma=0.9, epsilon=0.1)
+        if cfg.LEARNING_MODE == 'Tabular Q-Learning':
+            self.ai = qlearn.QLearn_Tabular(actions=range(cfg.directions), alpha=0.1, gamma=0.9, epsilon=0.1)
+        elif cfg.LEARNING_MODE == 'Deep Q-Learning':
+            self.ai = qlearn.QLearn(actions=range(cfg.directions), input_size=8, alpha=0.1, gamma=0.9, epsilon=0.1)
         self.catWin = 0
         self.mouseWin = 0
 
