@@ -24,6 +24,8 @@ assert learning_mode_index <= len(learning_modes)
 LEARNING_MODE = learning_modes[learning_mode_index]
 
 
+update_of_main_model= 10 #ou 1000 On MàJ le main model par federative learning tous les x mouvements
+
 # ------Reward and Punishment----
 EATEN_BY_CAT = -100
 MOVE_REWARD = 0 #Récompense pour avoir fait un mouvement sans être mangée
