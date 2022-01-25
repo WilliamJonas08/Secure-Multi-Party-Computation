@@ -21,7 +21,7 @@ class NeuralModel(nn.Module):
     def forward(self, x):
         x = self.linear1(x)
         x = F.relu(x)
-        x = self.dropout(x)
+        #x = self.dropout(x)
         x = self.linear2(x)
         x = F.relu(x)
         out = self.decision(x)
