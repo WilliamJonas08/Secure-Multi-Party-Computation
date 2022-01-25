@@ -16,8 +16,10 @@ speed = 1000   # animal speed is 10m/s, the max value supposed to be less than
 alpha = 0.1    # learning rate
 gamma = 0.9    # importance of next action
 epsilon = 0.1  # exploration chance
-MAX_AGE = 1000
+MAX_AGE = 10000
 MEAN_INTERVAL = 10    #int(MAX_AGE/1000)
+
+update_of_main_model= 10 #ou 1000 On MàJ le main model par federative learning tous les x mouvements
 
 # ------Reward and Punishment----
 EATEN_BY_CAT = -100
