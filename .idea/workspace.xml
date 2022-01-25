@@ -51,13 +51,13 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/greedyMouse.py</url>
-          <line>12</line>
+          <line>10</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/greedyMouse.py</url>
-          <line>212</line>
-          <option name="timeStamp" value="2" />
+          <url>file://$PROJECT_DIR$/setup.py</url>
+          <line>496</line>
+          <option name="timeStamp" value="3" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

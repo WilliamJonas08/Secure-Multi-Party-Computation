@@ -21,7 +21,7 @@ class NeuralModel(nn.Module):
     def forward(self, x):
         x = self.linear1(x)
         x = F.relu(x)
-        x = self.dropout(x)
+        #x = self.dropout(x)
         x = self.linear2(x)
         x = F.relu(x)
         out = self.decision(x)
@@ -106,7 +106,7 @@ class QLearn:
         """
         Stochastic gradient descent : 1 epoch with batch size 1 (1 sample only)
 
-        TODO : stocker les exemples pour un apprentissage par batch plus long ? (cf exemple TLNL)
+        TODO : stocker les exemples pour un apprentissage par batch plus long ?
         """
 
         criterion = nn.CrossEntropyLoss()           # fonction de loss à appliquer
