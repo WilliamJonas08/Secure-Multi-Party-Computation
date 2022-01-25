@@ -4,28 +4,15 @@ import random
 import setup
 import qlearn
 import config as cfg
+
 import torch
 
-def mean_average(list_perf, age, intervalle=cfg.MEAN_INTERVAL):
-    i, val = 0, 0
-    Trouve=False
-    while i<len(list_perf) and not(Trouve):
-        val+=list_perf[i]
-        if val>=age:
-            Trouve=True
-        else:
-            i+=1
-    if not(Trouve):
-        return(Trouve)
-    else:
-        if i<(intervalle-2):
-            return(list_perf[i])
-        else:
-            mean_avg=0
-            for j in range(intervalle):
-                mean_avg+=list_perf[i-j]
-            mean_avg=mean_avg/intervalle
-            return(mean_avg)
+from queue import Queue
+import numpy as np
+# reload(setup) 
+# reload(qlearn)
+
+
 
 def weights_and_bias_of_model(model):
     weight_linear1, bias_linear1=model.linear1.weight.data.clone(), model.linear1.bias.data.clone()
@@ -73,6 +60,66 @@ def federative_average(model_dict):
 
     return(linear1_mean_weight, linear1_mean_bias, linear2_mean_weight, linear2_mean_bias, decision_mean_weight, decision_mean_bias)
 
+  
+  
+def mean_average(list_perf, age, intervalle=cfg.MEAN_INTERVAL):
+    i, val = 0, 0
+    Trouve=False
+    while i<len(list_perf) and not(Trouve):
+        val+=list_perf[i]
+        if val>=age:
+            Trouve=True
+        else:
+            i+=1
+    if not(Trouve):
+        return(Trouve)
+    else:
+        if i<(intervalle-2):
+            return(list_perf[i])
+        else:
+            mean_avg=0
+            for j in range(intervalle):
+                mean_avg+=list_perf[i-j]
+            mean_avg=mean_avg/intervalle
+            return(mean_avg)
+  
+def moving_average(x, window_size):
+    #Modes : 'valid', 'same', 'full'
+    return np.convolve(x, np.ones(window_size), 'valid') / window_size
+
+def compute_mean_var_performance_over_mouses(mouses_performances):
+    nb_mouses = cfg.number_of_worlds
+
+    performances_at_each_age = np.empty((nb_mouses,cfg.MAX_AGE))
+    for mouse_id in range(nb_mouses):
+        age = 0
+        for survival_time in mouses_performances[mouse_id]:
+            for foo in range(survival_time):
+                performances_at_each_age[mouse_id][age] = survival_time
+                age+=1
+
+    min_mouse_ages = np.min([sum(mouses_performances[i]) for i in range(nb_mouses)])   #All mouses doesn't have the time to register the same number of ages
+    avg_mouse_lifetime = int(np.mean([np.mean(perfs) for perfs in mouses_performances]))
+
+    performances_at_each_age = performances_at_each_age[:,:min_mouse_ages]
+    mean_performances = np.array([np.mean(performances_at_each_age[:,age]) for age in range(min_mouse_ages)])
+    var_performances = np.array([np.var(performances_at_each_age[:,age]) for age in range(min_mouse_ages)])
+
+    #Display purpose only (hide irregularities due to unfinished last iterations)
+    mean_performances[:min_mouse_ages-avg_mouse_lifetime]
+    var_performances[:min_mouse_ages-avg_mouse_lifetime]
+
+    #Take moving average of values
+    mean_performances  = moving_average(mean_performances, window_size=cfg.MEAN_INTERVAL)
+    var_performances  = moving_average(var_performances, window_size=cfg.MEAN_INTERVAL)
+
+    return mean_performances, var_performances
+
+  
+
+#if __name__ == '__main__':
+
+
 #Initialisation worlds
 nb_worlds = cfg.number_of_worlds
 main_model=qlearn.NeuralModel(number_actions=8, input_size=8)
@@ -111,28 +158,40 @@ for i in range(age_max):
     #world.update(mouse.mouseWin, mouse.catWin)
     #world_bis.update(mouse_bis.mouseWin, mouse_bis.catWin)
 
+
 #Get performances through ages
 performances = []
 for world in worlds:
     performance = world.get_mouse_performance()
     performances.append(performance)
-#a=mouse.return_liste_performances() #print(a)
-#b=mouse_bis.return_liste_performances() #print(b)
+
+mean_performance, var_performances = compute_mean_var_performance_over_mouses(mouses_performances=performances)
+avg_mouse_lifetime = int(np.mean([np.mean(perfs) for perfs in performances]))
+
 
 #Plot
 import matplotlib.pyplot as plt
-graphs = [[] for i in range(nb_worlds)]
-#my_graph=[]
-#my_graph2=[]
-for age in range(age_max):
+
+plt.figure(1)
+plt.title("Mouses lifetime")
+if cfg.show_mouses_individual_performances:
+    #Creating graphs
+    graphs = [[] for i in range(nb_worlds)]
+    for age in range(age_max-avg_mouse_lifetime):
+        for world_id in range(nb_worlds):
+            mean = mean_average(performances[world_id], age)
+            graphs[world_id].append(mean)
+
+    #Plot graphs
     for world_id in range(nb_worlds):
-        mean = mean_average(performances[world_id], age)
-        graphs[world_id].append(mean)
-    #my_graph.append(mean_average(a, i))
-    #my_graph2.append(mean_average(b, i))
-for world_id in range(nb_worlds):
-    plt.plot(graphs[world_id], label=f'Mouse {world_id}')
-#plt.plot(my_graph[:-10], c='b', label='Mouse 1')
-#plt.plot(my_graph2[:-10], c='r', label='Mouse 2')
+        plt.plot(graphs[world_id], linestyle='--', label=f'Mouse {world_id}')
+
+plt.plot(mean_performance, linewidth=4, label="Mean mouses performance")
+
+if cfg.show_variance :
+    plt.figure(2)
+    plt.title("Variance of mouses performance")
+    plt.plot(var_performances)
+
 plt.legend(loc='best')
 plt.show()
