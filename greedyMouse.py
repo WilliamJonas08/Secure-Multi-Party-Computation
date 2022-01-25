@@ -276,16 +276,19 @@ class Mouse(setup.Agent):
         Size array : 8
         """
         def cell_value(cell):
+            #if cheese.cell is not None and (cell.x == cheese.cell.x and cell.y == cheese.cell.y):
+            #   return 3
             if cat.cell is not None and (cell.x == cat.cell.x and cell.y == cat.cell.y):
-                return 3
-#            elif cheese.cell is not None and (cell.x == cheese.cell.x and cell.y == cheese.cell.y):
-#               return 2
+                return 2
             else:
                 return 1 if cell.wall else 0
 
         dirs = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
-#TODO : revoir et comprendre
         return np.array([cell_value(world.get_relative_cell(self.cell.x + dir[0], self.cell.y + dir[1])) for dir in dirs])
+
+    def is_cat_around_mouse(self, state):
+        """Returns True if cat is close to the mouse else False"""
+        return (2 in state)
 
     def return_liste_performances(self):
         return(self.list_iterations)
@@ -304,6 +307,8 @@ class Mouse_bis(setup.Agent):
 
         self.iterations=0
         self.list_iterations=[]
+
+        self.previouslyNotHitAWall = True
 
         print('mouse init...')
 
@@ -341,14 +346,17 @@ class Mouse_bis(setup.Agent):
         #    reward = cfg.EAT_CHEESE
         #    cheese.cell = pick_random_location()
 
-        if self.lastState is not None: #souris non mangée
+        if self.lastState is not None and self.previouslyNotHitAWall: #souris non mangée
             self.ai.learn(self.lastState, self.lastAction, state, reward, is_last_state=False)
+
+        if not self.previouslyNotHitAWall:
+            self.ai.learn(self.lastState, self.lastAction, state, reward=cfg.HIT_WALL, is_last_state=False)
 
         # choose a new action and execute it
         action = self.ai.choose_action(state)
         self.lastState = state
         self.lastAction = action
-        self.go_direction(action)
+        self.previouslyNotHitAWall = self.go_direction(action)
 
     def calculate_state(self):
         """
@@ -366,6 +374,10 @@ class Mouse_bis(setup.Agent):
         dirs = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
         #TODO : revoir et comprendre
         return np.array([cell_value(world_bis.get_relative_cell(self.cell.x + dir[0], self.cell.y + dir[1])) for dir in dirs])
+
+    def is_cat_around_mouse(self, state):
+        """Returns True if cat is close to the mouse else False"""
+        return (2 in state)
 
     def return_liste_performances(self):
         return(self.list_iterations)
@@ -413,10 +425,10 @@ world_bis.add_agent(cat_bis,cell=pick_random_location_bis())
 #world_bis.display.speed = cfg.speed
 
 #while 1:
-age_max=10000 #10000
+age_max=cfg.MAX_AGE #10000
 for i in range(age_max):
     world.update(mouse.mouseWin, mouse.catWin)
-for i in range(age_max):
+#for i in range(age_max):
     world_bis.update(mouse_bis.mouseWin, mouse_bis.catWin)
 a=mouse.return_liste_performances()
 print(a)
