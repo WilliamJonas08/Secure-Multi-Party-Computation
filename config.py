@@ -18,7 +18,7 @@ epsilon = 0.1  # exploration chance
 MAX_AGE = 20000
 MEAN_INTERVAL = int(MAX_AGE/100)   #Size of the mean convolutional filter
 
-learning_mode_index = 3
+learning_mode_index = 1
 learning_modes = ['Tabular_QLearning', 'Deep_QLearning', 'Federated_Deep_QLearning', 'Federated_SMPC_Deep_QLearning']
 assert learning_mode_index <= len(learning_modes)
 if learning_mode_index>=2:
