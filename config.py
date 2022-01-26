@@ -1,6 +1,6 @@
 # coding:utf-8
 
-number_of_worlds = 8   #Number of mouses that will learn together (in case of federated learning)
+number_of_worlds = 10   #Number of mouses that will learn together (in case of federated learning)
 
 # -----World Setting------
 graphic_file = 'resources/world.txt'
@@ -15,10 +15,10 @@ speed = 1000   # animal speed is 10m/s, the max value supposed to be less than
 alpha = 0.1    # learning rate
 gamma = 0.9    # importance of next action
 epsilon = 0.1  # exploration chance
-MAX_AGE = 100
+MAX_AGE = 20000
 MEAN_INTERVAL = int(MAX_AGE/100)   #Size of the mean convolutional filter
 
-learning_mode_index = 3
+learning_mode_index = 1
 learning_modes = ['Tabular_QLearning', 'Deep_QLearning', 'Federated_Deep_QLearning', 'Federated_SMPC_Deep_QLearning']
 assert learning_mode_index <= len(learning_modes)
 if learning_mode_index>=2:
