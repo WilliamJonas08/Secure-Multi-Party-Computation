@@ -4,6 +4,8 @@ import random
 import setup
 import qlearn
 import config as cfg
+import time
+import os
 
 import torch
 
@@ -12,15 +14,78 @@ import numpy as np
 # reload(setup) 
 # reload(qlearn)
 
+if cfg.LEARNING_MODE == 'Federated_SMPC_Deep_QLearning':
+    #Pour éviter d'importer lorsque non nécessaire
+    #!pip install crypten
+    import crypten
+    crypten.init()
+
+    def encrypted_federative_average(model_dict): #Remplace federative_average
+        """
+        Computes average of weights updated from all agents through a sMPC method (by default using Crypten encrypted tensors)
+        """
+        nb_agents=len(model_dict)
+        weight_linear1, bias_linear1, weight_linear2, bias_linear2, weight_decision, bias_decision=weights_and_bias_of_model(model_dict["model0"])
+        linear1_mean_weight_enc = torch.zeros(size=weight_linear1.shape)
+        linear1_mean_bias_enc = torch.zeros(size=bias_linear1.shape)
+        linear2_mean_weight_enc = torch.zeros(size=weight_linear2.shape)
+        linear2_mean_bias_enc = torch.zeros(size=bias_linear2.shape)
+        decision_mean_weight_enc = torch.zeros(size=weight_decision.shape)
+        decision_mean_bias_enc = torch.zeros(size=bias_decision.shape)
+
+        with torch.no_grad():
+            for i in range(nb_agents):
+                weight_linear1, bias_linear1, weight_linear2, bias_linear2, weight_decision, bias_decision = weights_and_bias_of_model(model_dict["model"+str(i)])
+
+                #On encrypte les données du modèle avec Crypten
+                weight_linear1_enc, bias_linear1_enc = crypten.cryptensor(weight_linear1), crypten.cryptensor(bias_linear1)
+                weight_linear2_enc, bias_linear2_enc = crypten.cryptensor(weight_linear2), crypten.cryptensor(bias_linear2)
+                weight_decision_enc, bias_decision_enc = crypten.cryptensor(weight_decision), crypten.cryptensor(bias_decision)
+
+                #On fait la somme sur les données cryptées
+                linear1_mean_weight_enc = weight_linear1_enc +  linear1_mean_weight_enc
+                linear1_mean_bias_enc = bias_linear1_enc + linear1_mean_bias_enc
+                linear2_mean_weight_enc = weight_linear2_enc + linear2_mean_weight_enc
+                linear2_mean_bias_enc = bias_linear2_enc + linear2_mean_bias_enc
+                decision_mean_weight_enc = weight_decision_enc + decision_mean_weight_enc
+                decision_mean_bias_enc = bias_decision_enc + decision_mean_bias_enc
+
+            #On calcule la moyenne sur les données cryptées
+            linear1_mean_weight_enc = linear1_mean_weight_enc/nb_agents
+            linear1_mean_bias_enc = linear1_mean_bias_enc/nb_agents
+            linear2_mean_weight_enc = linear2_mean_weight_enc/nb_agents
+            linear2_mean_bias_enc = linear2_mean_bias_enc/nb_agents
+            decision_mean_weight_enc = decision_mean_weight_enc/nb_agents
+            decision_mean_bias_enc = decision_mean_bias_enc/nb_agents
+
+            #On décrypte les moyennes
+            linear1_mean_weight = linear1_mean_weight_enc.get_plain_text()
+            linear1_mean_bias = linear1_mean_bias_enc.get_plain_text()
+            linear2_mean_weight = linear2_mean_weight_enc.get_plain_text()
+            linear2_mean_bias = linear2_mean_bias_enc.get_plain_text()
+            decision_mean_weight = decision_mean_weight_enc.get_plain_text()
+            decision_mean_bias = decision_mean_bias_enc.get_plain_text()
+
+        return(linear1_mean_weight, linear1_mean_bias, linear2_mean_weight, linear2_mean_bias, decision_mean_weight, decision_mean_bias)
+
 
 
 def weights_and_bias_of_model(model):
-    weight_linear1, bias_linear1=model.linear1.weight.data.clone(), model.linear1.bias.data.clone()
-    weight_linear2, bias_linear2=model.linear2.weight.data.clone(), model.linear2.bias.data.clone()
-    weight_decision, bias_decision=model.decision.weight.data.clone(), model.decision.bias.data.clone()
+    """
+    Returns weights and bias of the input model
+    Careful : the model have to follow the specified architecture specified above
+    """
+    weight_linear1, bias_linear1 = model.linear1.weight.data.clone(), model.linear1.bias.data.clone()
+    weight_linear2, bias_linear2 = model.linear2.weight.data.clone(), model.linear2.bias.data.clone()
+    weight_decision, bias_decision = model.decision.weight.data.clone(), model.decision.bias.data.clone()
     return(weight_linear1, bias_linear1, weight_linear2, bias_linear2, weight_decision, bias_decision)
 
+
 def replace_weights_and_bias_of_model(model, new_weight_linear1, new_bias_linear1, new_weight_linear2, new_bias_linear2, new_weight_decision, new_bias_decision):
+    """
+    Returns model with updated weights and bias from the input weights and bias
+    Careful : the model have to follow the specified architecture specified above
+    """
     with torch.no_grad():
         model.linear1.weight.data = new_weight_linear1.data.clone()
         model.linear2.weight.data = new_weight_linear2.data.clone()
@@ -30,8 +95,12 @@ def replace_weights_and_bias_of_model(model, new_weight_linear1, new_bias_linear
         model.decision.bias.data = new_bias_decision.data.clone()
     return(model)
 
+
 def federative_average(model_dict):
-    nb_agents=len(model_dict)
+    """
+    Computes average of weights updated from all agents
+    """
+    nb_agents = len(model_dict)
     weight_linear1, bias_linear1, weight_linear2, bias_linear2, weight_decision, bias_decision=weights_and_bias_of_model(model_dict["model0"])
 
     linear1_mean_weight = torch.zeros(size=weight_linear1.shape)
@@ -63,6 +132,7 @@ def federative_average(model_dict):
   
   
 def mean_average(list_perf, age, intervalle=cfg.MEAN_INTERVAL):
+    """TODO ajouter description ou clarification variables"""
     i, val = 0, 0
     Trouve=False
     while i<len(list_perf) and not(Trouve):
@@ -88,6 +158,11 @@ def moving_average(x, window_size):
     return np.convolve(x, np.ones(window_size), 'valid') / window_size
 
 def compute_mean_var_performance_over_mouses(mouses_performances):
+    """
+    Returns:
+        - Means of mouses lifetimes at each age
+        - Means of mouses lifetimes variances at each age
+    """
     nb_mouses = cfg.number_of_worlds
 
     performances_at_each_age = np.empty((nb_mouses,cfg.MAX_AGE))
@@ -119,7 +194,6 @@ def compute_mean_var_performance_over_mouses(mouses_performances):
 
 #if __name__ == '__main__':
 
-
 #Initialisation worlds
 nb_worlds = cfg.number_of_worlds
 main_model=qlearn.NeuralModel(number_actions=8, input_size=8)
@@ -129,34 +203,51 @@ for world_id in range(nb_worlds):
     world = setup.World(filename='resources/world.txt')     #TODO : peut etre créer plusieurs fichiers tkt worlds
     world.add_agents()
 
-    model_name="model"+str(world_id)
-    model_info=world.mouse.ai.model
-    model_dict.update({model_name : model_info })
+    if cfg.LEARNING_MODE in ['Federated_Deep_QLearning', 'Federated_SMPC_Deep_QLearning']:
+        model_name = "model"+str(world_id)
+        model_info = world.mouse.ai.model
+        model_dict.update({model_name : model_info })
 
-    if world_id ==0:
+    if world_id == 0:
         world.display.activate()
         world.display.speed = cfg.speed
     worlds.append(world)
 
+
 #Run code
-#while 1:
+
+#Start recording training time
+start = time.time()
+
 age_max = cfg.MAX_AGE
-for i in range(age_max):
-    for j in range(nb_worlds):
+for age in range(age_max):
+    for world_id in range(nb_worlds):
     #for world in worlds:
-        worlds[j].update(worlds[j].mouse.mouseWin, worlds[j].mouse.catWin)
-        model_dict["model"+str(j)]=worlds[j].mouse.ai.model
-    if i%cfg.update_of_main_model==0:
+        worlds[world_id].update(worlds[world_id].mouse.mouseWin, worlds[world_id].mouse.catWin)
+
+        if cfg.LEARNING_MODE in ['Federated_Deep_QLearning', 'Federated_SMPC_Deep_QLearning']:
+            model_dict["model"+str(world_id)]=worlds[world_id].mouse.ai.model
+
+    if age % cfg.nb_maj_required_to_update_main_model == 0 and (cfg.LEARNING_MODE in ['Federated_Deep_QLearning', 'Federated_SMPC_Deep_QLearning']):
+
         #Federative average
-        linear1_mean_weight, linear1_mean_bias, linear2_mean_weight, linear2_mean_bias, decision_mean_weight, decision_mean_bias=federative_average(model_dict)
-        main_model=replace_weights_and_bias_of_model(main_model, linear1_mean_weight, linear1_mean_bias, linear2_mean_weight, linear2_mean_bias, decision_mean_weight, decision_mean_bias)
-        #MàJ des modèles de tous les agents
-        weight_linear1, bias_linear1, weight_linear2, bias_linear2, weight_decision, bias_decision=weights_and_bias_of_model(main_model)
-        for j in range(nb_worlds):
-            model_dict["model"+str(j)]=replace_weights_and_bias_of_model(model_dict["model"+str(j)], weight_linear1, bias_linear1, weight_linear2, bias_linear2, weight_decision, bias_decision)
-            worlds[j].mouse.ai.model=model_dict["model"+str(j)]
-    #world.update(mouse.mouseWin, mouse.catWin)
-    #world_bis.update(mouse_bis.mouseWin, mouse_bis.catWin)
+        if cfg.LEARNING_MODE == 'Federated_Deep_QLearning':
+            linear1_mean_weight, linear1_mean_bias, linear2_mean_weight, linear2_mean_bias, decision_mean_weight, decision_mean_bias = federative_average(model_dict)
+        else: #cfg.LEARNING_MODE == 'Federated_SMPC_Deep_QLearning':
+            linear1_mean_weight, linear1_mean_bias, linear2_mean_weight, linear2_mean_bias, decision_mean_weight, decision_mean_bias = encrypted_federative_average(model_dict)
+
+        #Update main model according to aggregated agents models weights
+        main_model = replace_weights_and_bias_of_model(main_model, linear1_mean_weight, linear1_mean_bias, linear2_mean_weight, linear2_mean_bias, decision_mean_weight, decision_mean_bias)
+
+        #Update of all agents models
+        weight_linear1, bias_linear1, weight_linear2, bias_linear2, weight_decision, bias_decision = weights_and_bias_of_model(main_model)
+        for world_id2 in range(nb_worlds):
+            model_dict["model"+str(world_id2)] = replace_weights_and_bias_of_model(model_dict["model"+str(world_id2)], weight_linear1, bias_linear1, weight_linear2, bias_linear2, weight_decision, bias_decision)
+            worlds[world_id2].mouse.ai.model=model_dict["model"+str(world_id2)]
+
+#End time recording
+end = time.time()
+time_elapsed = end - start
 
 
 #Get performances through ages
@@ -169,11 +260,20 @@ mean_performance, var_performances = compute_mean_var_performance_over_mouses(mo
 avg_mouse_lifetime = int(np.mean([np.mean(perfs) for perfs in performances]))
 
 
+#Saving results
+#/results/
+#np.save(f'../results/{cfg.LEARNING_MODE}-lifetime-{cfg.MAX_AGE}iterations', mean_performance)
+#np.save(f'../results/{cfg.LEARNING_MODE}-var-{cfg.MAX_AGE}iterations', var_performances)
+#np.save(f'../results/{cfg.LEARNING_MODE}',mean_performance)
+path = os.path.join('results','{}-{}_iterations.npz'.format(cfg.LEARNING_MODE,cfg.MAX_AGE)) #TODO : ajouter nb worlds
+np.savez(path, lifetime=mean_performance, var=var_performances, time=np.array([time_elapsed]))
+
+
 #Plot
 import matplotlib.pyplot as plt
 
 plt.figure(1)
-plt.title("Mouses lifetime")
+plt.title(f"Mouses lifetime (moy interval = {cfg.MEAN_INTERVAL})")
 if cfg.show_mouses_individual_performances:
     #Creating graphs
     graphs = [[] for i in range(nb_worlds)]

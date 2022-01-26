@@ -373,14 +373,18 @@ class World:
             print('mouse random generate..')
             return
 
-        if self.mouse.lastState is not None: #souris non mangée
+        if self.mouse.hit_wall and self.mouse.lastState is not None: #Souris a été en direction d'un mur
+            reward = cfg.HIT_WALL
+            self.mouse.ai.learn(self.mouse.lastState, self.mouse.lastAction, state, reward, is_last_state=False)
+
+        elif self.mouse.lastState is not None: #souris non mangée
             self.mouse.ai.learn(self.mouse.lastState, self.mouse.lastAction, state, reward, is_last_state=False)
 
         # choose a new action and execute it
         action = self.mouse.ai.choose_action(state)
         self.mouse.lastState = state
         self.mouse.lastAction = action
-        self.mouse.go_direction(action)
+        self.mouse.hit_wall = not self.mouse.go_direction(action)   # 'not' because go_direction returns True if valid action and False if action in wall direction
 
     #TODO : move method into Cat class
     def update_cat(self):
@@ -480,9 +484,9 @@ class World:
 class Mouse(Agent):
     def __init__(self):
         self.ai = None
-        if cfg.LEARNING_MODE == 'Tabular Q-Learning':
+        if cfg.LEARNING_MODE == 'Tabular_QLearning':
             self.ai = qlearn.QLearn_Tabular(actions=range(cfg.directions), alpha=0.1, gamma=0.9, epsilon=0.1)
-        elif cfg.LEARNING_MODE == 'Deep Q-Learning':
+        elif cfg.LEARNING_MODE in ['Deep_QLearning', 'Federated_Deep_QLearning', 'Federated_SMPC_Deep_QLearning']:
             self.ai = qlearn.QLearn(actions=range(cfg.directions), input_size=8, alpha=0.1, gamma=0.9, epsilon=0.1)
         self.catWin = 0
         self.mouseWin = 0
@@ -493,6 +497,8 @@ class Mouse(Agent):
 
         self.current_life_duration=0
         self.life_durations=[]
+
+        self.hit_wall = False
 
         print('mouse init...')
 

@@ -1,6 +1,6 @@
 # coding:utf-8
 
-number_of_worlds = 1   #Number of mouses that will learn together (in case of federated learning)
+number_of_worlds = 8   #Number of mouses that will learn together (in case of federated learning)
 
 # -----World Setting------
 graphic_file = 'resources/world.txt'
@@ -15,21 +15,25 @@ speed = 1000   # animal speed is 10m/s, the max value supposed to be less than
 alpha = 0.1    # learning rate
 gamma = 0.9    # importance of next action
 epsilon = 0.1  # exploration chance
-MAX_AGE = 1000
-MEAN_INTERVAL = int(MAX_AGE/50)   #Size of the mean convolutional filter
+MAX_AGE = 100
+MEAN_INTERVAL = int(MAX_AGE/100)   #Size of the mean convolutional filter
 
-learning_modes = ['Tabular Q-Learning', 'Deep Q-Learning']
-learning_mode_index = 0
+learning_mode_index = 3
+learning_modes = ['Tabular_QLearning', 'Deep_QLearning', 'Federated_Deep_QLearning', 'Federated_SMPC_Deep_QLearning']
 assert learning_mode_index <= len(learning_modes)
+if learning_mode_index>=2:
+    assert number_of_worlds > 1
 LEARNING_MODE = learning_modes[learning_mode_index]
 
+nb_maj_required_to_update_main_model= 10 #ou 1000 On MàJ le main model par federative learning tous les x mouvements
 
-update_of_main_model= 10 #ou 1000 On MàJ le main model par federative learning tous les x mouvements
 
 # ------Reward and Punishment----
 EATEN_BY_CAT = -100
-MOVE_REWARD = 0 #Récompense pour avoir fait un mouvement sans être mangée
-TIME_TO_SURVIVE=100 #Durée d'un épisode pour que souris gagne
+MOVE_REWARD = 1     #Récompense pour avoir fait un mouvement sans être mangée + permet de la pousser a bouger/explorer des états lorsque le chat n'est pas là
+#TODO : reward if hits the wall ?
+HIT_WALL = -10000    #Mouse can't go on a wall (if we wan't to delete the effect of the wall negative reward : just set HIT_WALL = MOVE_REWARD
+TIME_TO_SURVIVE=100     #Durée d'un épisode pour que souris gagne
 
 
 # determine how many directions can agent moves.
@@ -38,5 +42,5 @@ directions = 8   # you may change it to 4: up,down,left and right.
 
 # ------Display----
 show_mouses_individual_performances = False
-show_variance = False
+show_variance = True
 
