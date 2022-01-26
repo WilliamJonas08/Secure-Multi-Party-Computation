@@ -2,3 +2,5 @@
 /.ipynb_checkpoints
 /Desktop
 /AgentTLNL.py
+/__pycache__
+/.idea
