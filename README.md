@@ -25,7 +25,7 @@ We rely on the open-source library Crypten. It is a framework built on PyTorch t
 
 ```bash
 git clone https://github.com/WilliamJonas08/Secure-Multi-Party-Computation
-cd QLearningMouse
+cd Secure-Multi-Party-Computation
 python greedyMouse.py
 ```
 
