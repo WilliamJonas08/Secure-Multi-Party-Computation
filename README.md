@@ -7,19 +7,25 @@ This project has been realized in the frame of my Artificial Intelligence and Ma
 
 Criteo is a French ad retargeting company with revenues of €2 billion, serving over 4 billion ads every day.
 
-The objective of the project (research oriented) is to evaluate the relevance, for the Machine Learning domain, of the cryptographic method called Secure Multiparty Computation (sMPC) in the context of a Federative Learning method on a bandit algorithm.
+The objective of the project (research oriented) is to evaluate the relevance, for the Machine Learning domain, of the cryptographic method called **Secure Multiparty Computation (sMPC) in the context of a Federative Learning method**.
 
-## The main questions are:
+**Task:** We first tried this method on a reinforcement learning algorithm where a mouse is trained to survive as long as possible. Then we tried it on a MNIST classification task.
+
+## We are comparing this new method to classic Federated Learning through some questions:
 - Does this method increase the accuracy of the models?
-- Does this method consume less energy? (Data not exported to the cloud).
+- Does this method consume less energy? (data not exported to the cloud).
 - What are the limitations of this method?
+- Does it allow to increase data privacy ?
+
+We are trying this new method which is supposed to be more secure because a lot of research has shown that updates received from users (using a traditional Federated Learning aggregation method) leak information about the underlying data samples. Here are a few of them: 
+[Exploiting unintended feature leakage in collaborative learning](https://arxiv.org/abs/1805.04049) (in SP2019), [Deep leakage from gradients](https://arxiv.org/abs/1906.08935) (in NeurIPS2019), [Beyond Inferring Class Representatives: User-Level Privacy Leakage From Federated Learning](https://arxiv.org/abs/1812.00535) (in INFOCOM2019)
 
 We rely on the open-source library Crypten. It is a framework built on PyTorch to facilitate secure and privacy-preserving machine learning search. Crypten implements the sMPC method, which encrypts information by splitting the data between multiple parties, each of which can perform computations on their share but are not able to read the original data. 
 
 ## 📌 The strategy used is to confront the following 3 models: 
 - Q-Learning Bandits Algorithm
-- Learning algorithm trained via Federated Learning
-- Learning algorithm trained via Federated Learning with sMPC method
+- Q-Learning algorithm trained via Federated Learning
+- Q-Learning algorithm trained via Federated Learning with sMPC method
 
 ## Reproduce it yourself
 
@@ -30,7 +36,7 @@ python greedyMouse.py
 ```
 
 The simulation parameters can be modified from the config.py file where:
-- **number_of_worlds** : number of mice/worlds generated in parallel
+- **number_of_worlds** : number of mouse/worlds generated in parallel
 - **learning_mode_index** : learning type among Tabular Q-Learning / Deep QLearning / Federated Deep QLearning
 - **MAX_AGE** : number of iterations
 
