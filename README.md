@@ -1,8 +1,6 @@
 # Secure-MultiParty-Computation
 
 
-# Project présentation 
-
 This project has been realized in the frame of my Artificial Intelligence and Machine Learning master project.
 
 Criteo is a French ad retargeting company with revenues of €2 billion, serving over 4 billion ads every day.
@@ -11,7 +9,7 @@ The objective of the project (research oriented) is to evaluate the relevance, f
 
 **Task:** We first tried this method on a reinforcement learning algorithm where a mouse is trained to survive as long as possible. Then we tried it on a MNIST classification task.
 
-## We are comparing this new method to classic Federated Learning through some questions:
+### We are comparing this new method to classic Federated Learning through some questions:
 - Does this method increase the accuracy of the models?
 - Does this method consume less energy? (data not exported to the cloud).
 - What are the limitations of this method?
@@ -22,12 +20,12 @@ We are trying this new method which is supposed to be more secure because a lot 
 
 We rely on the open-source library Crypten. It is a framework built on PyTorch to facilitate secure and privacy-preserving machine learning search. Crypten implements the sMPC method, which encrypts information by splitting the data between multiple parties, each of which can perform computations on their share but are not able to read the original data. 
 
-## 📌 The strategy used is to confront the following 3 models: 
+### 📌 The strategy used is to confront the following 3 models: 
 - Q-Learning Bandits Algorithm
 - Q-Learning algorithm trained via Federated Learning
 - Q-Learning algorithm trained via Federated Learning with sMPC method
 
-## Reproduce it yourself
+### Reproduce it yourself
 
 ```bash
 git clone https://github.com/WilliamJonas08/Secure-Multi-Party-Computation
@@ -41,7 +39,7 @@ The simulation parameters can be modified from the config.py file where:
 - **MAX_AGE** : number of iterations
 
 
-# Project Results
+## Project Results
 
 Our project was very short in time and we didn't have access to a powerful calculation system. We didn't have the time to run all the learning methods on 300k iterations where we should see the learning effect of the mouse (at least in tabular Q-Learning mode). Your can find below the results given by 20k iterations where it's normal to don't see the learning effect.
 ![](resources/20k_results.png)
@@ -51,7 +49,7 @@ Hence, in order to display some results on time, we decided to adapt the task to
 
 You can check out the report for further details about the project
 
-## Possible improvements
+### Possible improvements
 - Reducing the number of agents interacting throught sMPC might accelerate calculations (create pre-aggregation step)
 - Find better Q-Learning regression model architecture
 
@@ -61,12 +59,12 @@ You can check out the report for further details about the project
 
 <b>QLearningMouse</b>  is a small cat-mouse-cheese game based on [Q-Learning](https://en.wikipedia.org/wiki/Q-learning). The original version is by [vmayoral](https://github.com/vmayoral): [basic_reinforcement_learning:tutorial1](https://github.com/vmayoral/basic_reinforcement_learning/tree/master/tutorial1), I reconstructed his code to make the game more configurable, and what different most is that I use breadth-first-search([BFS](https://en.wikipedia.org/wiki/Breadth-first_search)) when cat chasing the AI mouse, so the cat looks much more brutal.
 
-## About the game
+### About the game
 Cat always chase the mouse in the shortest path, however the mouse first does not know the danger of being eaten. 
 * <b>Mouse win</b> when eating the cheese and earns rewards value of 50, then a new cheese will be produced in a random grid.
 * <b>cat win</b> when eating the mouse, the latter will gain rewards value of -100 when dead. Then it will relive in a random grid.
 
-## Algorithm  
+### Algorithm  
 The basic algorithm of Q-Learning is:  
 ```
 Q(s, a) += alpha * (reward(s,a) + gamma * max(Q(s', a') - Q(s,a))
@@ -82,7 +80,7 @@ Learn more about Q-Learning:
 2. [ARTIFICIAL INTELLIGENCE FOUNDATIONS OF COMPUTATIONAL AGENTS : 11.3.3 Q-learning](http://artint.info/html/ArtInt_265.html)
 
 
-## Example
+### Example
 Below we present a *mouse player* after **300 generations** of reinforcement learning:  
 * blue is for mouse.
 * black is for cat.
